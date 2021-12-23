@@ -31,3 +31,21 @@ const meubleDisplay = async () => {
 };
 // Lance la function pour Afficher les produits
 meubleDisplay();
+
+// Selectionne les a tag dans la section avec id items
+let items = document.querySelectorAll("#items a");
+console.log(items);
+// Boucle pour recuperer l'id de href du produit cliqué
+items.forEach((item) =>
+    item.addEventListener("click", () => {
+        console.log(item);
+        // Injecte dans l'url du navigateur l'id du produit cliqué
+        window.location = `product.html?id=${item.id}`;
+    }),
+);
+
+
+// var str = ``;
+// var url = new URL(str);
+// var id = url.searchParams.get("id");
+// console.log(id);
