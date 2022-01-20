@@ -43,9 +43,3 @@ items.forEach((item) =>
         window.location = `product.html?id=${item.id}`;
     }),
 );
-
-
-// var str = ``;
-// var url = new URL(str);
-// var id = url.searchParams.get("id");
-// console.log(id);
