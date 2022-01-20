@@ -156,4 +156,50 @@ const calculCartPrice = async () => {
     });
     }
 }; calculCartPrice();
+    
+// Suppression du produit du panier
+let articles = document.getElementsByClassName("cart__item");
+console.log(articles);
+let removeBtn = document.querySelectorAll(".deleteItem");
+
+// Boucle qui ajoute un eventListener sur tous les boutons "Supprimer"
+  for (let i = 0; i < removeBtn.length; i++) {
+    let remove = removeBtn[i];
+    // ecoute l'evenement du click sur bouton "Supprimer"
+    remove.addEventListener("click", () => {
+      // supprime le produit du localStorage 
+      cart.splice(i, 1);
+      // supprime l'article du DOM
+      articles[i].remove();
+      // met à jour le localstorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+      // lance la fonction qui va mettre à jour le prix et le total de la page panier
+      calculCartQuantity();
+      calculCartPrice();
+    });
+  }
+// Changement de la quantité du produit
+// Boucle qui ajoute un eventListener sur tous les articles affichés dans le panier
+  for (let i = 0; i < articles.length; i++) {
+    let article = articles[i];
+    // ecoute l'evenement du changement de la valeur de l'input quantite
+    article.addEventListener("change", (e) => {
+      // envoie la quantité selectionnée dans le panier
+      cart[i].quantity = parseInt(e.target.value);
+    // cas particulier si quantité = zero alors declanchement de suppression de produit
+      if (cart[i].quantity == 0) {
+        cart.splice(i, 1);
+        // supprime l'article du DOM
+        articles[i].remove();
+        calculCartPrice();
+      }
+      console.log(cart);
+      // met à jour le localstorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+      // lance la fonction qui va mettre à jour le prix et le total de la page panier
+      calculCartQuantity();
+      calculCartPrice();
+    });
+  }
+
 
