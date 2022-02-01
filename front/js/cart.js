@@ -8,29 +8,25 @@ function getCart() {
          return JSON.parse(cart);
      }
  }
-
+// Initialisation du tableau des données des produits renvoyé par l'API
 let meubleData = [];
- // Recupere les données des produits depuis l'API
+// Recupere les données des produits depuis l'API
 const fetchMeuble = async () => {
     await fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
     .then((promise) => {
         meubleData = promise;
-        console.log(meubleData);
     });
 }; fetchMeuble();
 
 // Affiche les prix depuis l'API 
-const priceDisplay = async (priceElt) => {
+const priceDisplay = async (priceElt, productOfCart) => {
     // recupere les donnnées des produits depuis l'API pour avoir les prix
     await fetchMeuble();
-    // pour chaque produit du panier,
-    getCart().forEach((productOfCart) => {
-        // trouve le produit avec id correspondant dans les données récupérées de l'API
-        let foundProduct = meubleData.find(p => p._id === productOfCart.id);
-        // affiche le prix du produit à l'unité
-        priceElt.textContent = foundProduct.price + " €";
-    });
+    // trouve le produit avec id correspondant dans les données récupérées de l'API
+    let foundProduct = meubleData.find(p => p._id === productOfCart.id);
+    // affiche le prix du produit à l'unité
+    priceElt.textContent = foundProduct.price + " €";
 }; 
 
  // Enregistre dans le locale storage le panier au format json (sous forme de chaine de caracteres)
@@ -64,8 +60,6 @@ function saveToLocalStorage(cart) {
     let itemDesc = document.createElement("div");
     itemDesc.setAttribute("class", "cart__item__content__description");
     itemContent.appendChild(itemDesc);
-
-    console.log(itemDesc);
     // Titre / nom du produit 
     let itemName = document.createElement("h2");
     itemName.textContent = productOfCart.name;
@@ -78,9 +72,9 @@ function saveToLocalStorage(cart) {
     let priceElt = document.createElement("p");
     itemDesc.appendChild(priceElt);
 
-    // Boucle pour recuperer les prix depuis l'API
+    // Fonction pour recuperer les prix depuis l'API
     // pour chaque produit du panier, 
-    priceDisplay(priceElt);
+    priceDisplay(priceElt, productOfCart);
     
     // Settings
     let itemSettings = document.createElement("div");
@@ -117,89 +111,61 @@ function saveToLocalStorage(cart) {
 // Calcul la quantité total de produits du panier
 const calculCartQuantity = async () => {
     let totalQuantity = document.getElementById('totalQuantity');
-    console.log(totalQuantity);
-    // declaration - initialisation à zero de la quantité total
-    let calculTotalQuantity = 0;
-    // si aucun produit affiche 0
-    if (cart.length == undefined || cart.length == null || cart.length == 0) {
+    let calculTotalQuantity = 0; // declaration - initialisation à zero de la quantité total
+    if (cart.length == undefined || cart.length == null || cart.length == 0) { // si aucun produit affiche 0
             totalQuantity.textContent = 0;
-        }
-        // sinon calcul la quantité total de produits du panier, 
-        else {
-            // Pour chaque produit du panier,
-            getCart().forEach((productOfCart) => {
-                // en ajoutant à chaque tour de boucle, la quantité d'un produit du panier à la quantité total
-                calculTotalQuantity += productOfCart.quantity;
-                console.log(calculTotalQuantity);
-                // affiche la quantité total dans l'element avec id totalQuantité
-                totalQuantity.textContent = calculTotalQuantity;
+            localStorage.removeItem("cart"); // supprime le panier du localStorage (lorsque tous les produits sont supprimés du panier)
+        } else { // sinon calcul la quantité total de produits du panier 
+            getCart().forEach((productOfCart) => { // Pour chaque produit du panier,
+                calculTotalQuantity += productOfCart.quantity; //  à chaque tour de boucle, ajoute la quantité d'un produit du panier à la quantité total
+                totalQuantity.textContent = calculTotalQuantity; // affiche la quantité total dans l'element avec id totalQuantité
             });
 }
 }; calculCartQuantity();
-
 // Calcul le prix total du panier
 const calculCartPrice = async () => {
     await fetchMeuble();
-
     let totalPrice = document.getElementById("totalPrice");
     let calculTotalPrice = 0;
     if (cart.length == undefined || cart.length == null || cart.length == 0) {
         totalPrice.textContent = 0;
-    }
-    else {
+    } else {
     getCart().forEach((productOfCart) => {
-        let foundProduct = meubleData.find(p => p._id === productOfCart.id);
-        console.log(foundProduct.price);
-        calculTotalPrice += productOfCart.quantity * foundProduct.price;
-        console.log(calculTotalPrice);
+        let foundProduct = meubleData.find(p => p._id === productOfCart.id); // trouve l'id correspondant à l'id du produit du panier, dans les données de l'API
+        calculTotalPrice += productOfCart.quantity * foundProduct.price; // Calcul le prix total
         totalPrice.textContent = calculTotalPrice;
     });
     }
 }; calculCartPrice();
-    
 // Suppression du produit du panier
 let articles = document.getElementsByClassName("cart__item");
-console.log(articles);
 let removeBtn = document.querySelectorAll(".deleteItem");
 
-// Boucle qui ajoute un eventListener sur tous les boutons "Supprimer"
-  for (let i = 0; i < removeBtn.length; i++) {
+  for (let i = 0; i < removeBtn.length; i++) { // Boucle qui ajoute un eventListener sur tous les boutons "Supprimer"
     let remove = removeBtn[i];
-    // ecoute l'evenement du click sur bouton "Supprimer"
-    remove.addEventListener("click", () => {
-      // supprime le produit du localStorage 
-      cart.splice(i, 1);
-      // supprime l'article du DOM
-      articles[i].remove();
-      // met à jour le localstorage
-      localStorage.setItem("cart", JSON.stringify(cart));
-      // lance la fonction qui va mettre à jour le prix et le total de la page panier
-      calculCartQuantity();
-      calculCartPrice();
+    remove.addEventListener("click", () => { // ecoute l'evenement du click sur bouton "Supprimer"
+      cart.splice(i, 1); // supprime le produit du localStorage 
+      articles[i].remove();// supprime l'article du DOM
+      localStorage.setItem("cart", JSON.stringify(cart)); // met à jour le localstorage
+      location.reload(); // recharge la page
+      calculCartQuantity(); // lance la fonction qui va mettre à jour la quantité total et
+      calculCartPrice(); // le prix 
     });
   }
-// Changement de la quantité du produit
-// Boucle qui ajoute un eventListener sur tous les articles affichés dans le panier
-  for (let i = 0; i < articles.length; i++) {
+// Changement de la quantité du produit 
+  for (let i = 0; i < articles.length; i++) { // Boucle qui ajoute un eventListener sur tous les articles affichés dans le panier
     let article = articles[i];
-    // ecoute l'evenement du changement de la valeur de l'input quantite
-    article.addEventListener("change", (e) => {
-      // envoie la quantité selectionnée dans le panier
-      cart[i].quantity = parseInt(e.target.value);
-    // cas particulier si quantité = zero alors declanchement de suppression de produit
-      if (cart[i].quantity == 0) {
-        cart.splice(i, 1);
-        // supprime l'article du DOM
-        articles[i].remove();
-        calculCartPrice();
+    article.addEventListener("change", (e) => { // ecoute l'evenement du changement de la valeur de l'input quantite
+      console.log(cart[i].quantity);
+      cart[i].quantity = parseInt(e.target.value); // envoie la quantité selectionnée dans le panier
+      if (cart[i].quantity == 0) { // cas particulier si quantité = zero alors declanchement de suppression de produit
+        cart.splice(i, 1); 
+        articles[i].remove(); // supprime l'article du DOM
+        location.reload(); // recharge la page 
+        calculCartPrice(); // lance la fonction qui va mettre à jour le prix
       }
-      console.log(cart);
-      // met à jour le localstorage
-      localStorage.setItem("cart", JSON.stringify(cart));
-      // lance la fonction qui va mettre à jour le prix et le total de la page panier
-      calculCartQuantity();
-      calculCartPrice();
+      localStorage.setItem("cart", JSON.stringify(cart)); // met à jour le localstorage
+      calculCartQuantity(); // lance la fonction qui va mettre à jour la quantité total et
+      calculCartPrice(); // le prix
     });
   }
-
-
