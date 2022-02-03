@@ -195,7 +195,7 @@ let regExps = {
   lastNameRegExp: new RegExp("^[a-zA-Zàâäéèêëïîôöùûüÿç-]+$", "g"),
   addressRegExp: new RegExp("[0-9]{1,4}[ ,-][ a-zA-Zàâäéèêëïîôöùûüÿç-]+$", "g"),
   cityRegExp: new RegExp("[0-9]{1,5}[ ,-][ a-zA-Zàâäéèêëïîôöùûüÿç-]+$", "g"),
-  emailRegExp: new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,4}$"),
+  emailRegExp: new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/),
 };
 // Création de l'objet contenat les messages d'erreurs
 let errorMsgs = {
@@ -229,14 +229,19 @@ for (let input of form) { // Pour chaque input du formulaire,
 // Ajoute un ecouteur d'evenement sur le bouton "Commander"
 btnCommander.addEventListener("click", (e) => {
   e.preventDefault();
+        console.log(cart.length);
     // Si toutes les données de {contact} sont remplis et validées, 
-    if (contact.firstName && contact.lastName && contact.address && contact.city && contact.email) {
+    if (contact.firstName && contact.lastName && contact.address && contact.city && contact.email && cart.length >= 0) {
       for (let i = 0; i < cart.length; i = i + 1) { // pour chaque produit du panier ...
         products.push(cart[i].id); // ... ajout de l'id dans le tableau products à envoyer à l'API
         getOrderId(); // Lance la fonction d'envoie de la requete fetch POST à l'API pour recuperer le numero de commande "orderId" retourné
           }
-    } else {
+    } else if (cart.length == 0) {
+      console.log("le panier: " + cart.length);
+      alert("Votre panier est vide. Veuillez continuer vos achats");
       e.preventDefault();
+    } else if (!contact.firstName || !contact.lastName || !contact.address || !contact.city || !contact.email && cart.length >= 0) {
+        alert("Veuillez remplir tous les champs du formulaire de contact correctement");
     }
 });
 // Crée l'objet des données de contact et tableau d'id des produits à envoyer à l'API
